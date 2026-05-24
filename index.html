@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1a1a2e">
+<title>Daily English — 5+5</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0f0f1a;
+    --surface: #1a1a2e;
+    --surface-2: #242440;
+    --border: #2d2d4a;
+    --text: #e8e8f0;
+    --text-dim: #9a9ab0;
+    --text-faint: #6a6a80;
+    --accent: #7c6cf0;
+    --accent-soft: #2a2548;
+    --success: #4ade80;
+    --warning: #fbbf24;
+  }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+  .app { max-width: 480px; margin: 0 auto; padding: 16px 16px 32px; }
+
+  /* Header */
+  .header { padding: 12px 0 16px; }
+  .date-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+  .date { font-size: 13px; color: var(--text-dim); font-weight: 500; letter-spacing: 0.02em; }
+  .streak { font-size: 13px; color: var(--warning); font-weight: 600; }
+  .title { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: var(--text-dim); }
+
+  /* Topic pill */
+  .topic-pill {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-top: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin: 20px 0 16px;
+    background: var(--surface);
+    padding: 4px;
+    border-radius: 12px;
+  }
+  .tab {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .tab.active { background: var(--surface-2); color: var(--text); }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.2s;
+  }
+  .card.learned { opacity: 0.55; border-color: var(--accent-soft); }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .word {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .pos {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-style: italic;
+    margin-left: 6px;
+    font-weight: 400;
+  }
+  .definition {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .example {
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface-2);
+    padding: 10px 12px;
+    border-radius: 8px;
+    border-left: 3px solid var(--accent);
+    font-style: italic;
+  }
+  .phrase {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+    letter-spacing: -0.01em;
+  }
+  .meaning {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+
+  /* Actions */
+  .actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .btn {
+    flex: 1;
+    padding: 8px 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+  .btn.learned-btn.done { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-soft); }
+  .btn-icon { width: 36px; flex: 0 0 36px; padding: 8px; }
+
+  /* Top actions */
+  .top-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .refresh-btn {
+    flex: 1;
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .refresh-btn:active { background: var(--surface-2); }
+
+  /* Topic selector */
+  .topic-selector {
+    display: none;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: var(--surface);
+    border-radius: 12px;
+  }
+  .topic-selector.open { display: flex; }
+  .topic-btn {
+    flex: 1 1 calc(50% - 6px);
+    padding: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    text-transform: capitalize;
+  }
+  .topic-btn.selected { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* Progress */
+  .progress-bar {
+    height: 4px;
+    background: var(--surface-2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 8px 0 16px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.4s ease;
+  }
+
+  /* Empty/loading state */
+  .empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+  .spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--surface-2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Stats footer */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 20px;
+    padding: 16px;
+    background: var(--surface);
+    border-radius: 12px;
+  }
+  .stat { text-align: center; }
+  .stat-val { font-size: 20px; font-weight: 700; color: var(--accent); }
+  .stat-lbl { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+
+  /* Install prompt */
+  .install-banner {
+    display: none;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .install-banner.show { display: block; }
+  .install-banner b { color: var(--accent); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--accent);
+    color: white;
+    padding: 10px 18px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 6px 20px rgba(124, 108, 240, 0.4);
+    transition: transform 0.3s;
+    z-index: 100;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="date-row">
+      <span class="date" id="dateText">Loading…</span>
+      <span class="streak" id="streakText">🔥 0 day streak</span>
+    </div>
+    <h1 class="title">Daily English</h1>
+    <p class="subtitle">5 words + 5 phrases you'll actually use</p>
+    <div class="topic-pill" id="topicPill" onclick="toggleTopicSelector()">📚 loading…</div>
+  </div>
+
+  <div class="topic-selector" id="topicSelector"></div>
+
+  <div class="install-banner" id="installBanner">
+    💡 <b>Tip:</b> Add this to your home screen for daily quick access. Tap Share → Add to Home Screen.
+  </div>
+
+  <div class="top-actions">
+    <button class="refresh-btn" onclick="generateNewSet()">
+      <span>🔄</span><span>New set</span>
+    </button>
+  </div>
+
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="words" onclick="switchTab('words')">Words</button>
+    <button class="tab" data-tab="phrases" onclick="switchTab('phrases')">Phrases</button>
+  </div>
+
+  <div id="content"></div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-val" id="totalLearned">0</div>
+      <div class="stat-lbl">Learned</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="todayLearned">0/10</div>
+      <div class="stat-lbl">Today</div>
+    </div>
+    <div class="stat">
+      <div class="stat-val" id="daysActive">0</div>
+      <div class="stat-lbl">Days</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =============== CONTENT LIBRARY ===============
+// Curated words & phrases people actually use, organized by topic
+const LIBRARY = {
+  work: {
+    words: [
+      { w: "deadline", pos: "noun", def: "the latest time something must be finished", ex: "I'm working hard to meet the deadline on Friday." },
+      { w: "overwhelmed", pos: "adj", def: "feeling like you have too much to handle", ex: "I'm overwhelmed with all these emails." },
+      { w: "deliverable", pos: "noun", def: "something you must complete and hand in", ex: "What are the deliverables for this project?" },
+      { w: "scope", pos: "noun", def: "the range or extent of work", ex: "That's outside the scope of this project." },
+      { w: "bandwidth", pos: "noun", def: "energy or time available to do something", ex: "I don't have the bandwidth to take this on." },
+      { w: "follow up", pos: "verb", def: "to check on something later", ex: "I'll follow up with you next week." },
+      { w: "align", pos: "verb", def: "to agree or be on the same page", ex: "Let's align on the goals before we start." },
+      { w: "leverage", pos: "verb", def: "to use something effectively", ex: "We can leverage our experience here." },
+      { w: "stakeholder", pos: "noun", def: "person involved or affected by a project", ex: "I need to update the stakeholders today." },
+      { w: "blocker", pos: "noun", def: "something stopping progress", ex: "The slow approval is a blocker for me." },
+      { w: "backlog", pos: "noun", def: "list of pending work", ex: "My backlog is getting long again." },
+      { w: "prioritize", pos: "verb", def: "to decide what's most important", ex: "I need to prioritize my tasks today." },
+      { w: "loop in", pos: "verb", def: "to include someone in communication", ex: "Let me loop in Sarah on this thread." },
+      { w: "circle back", pos: "verb", def: "to return to a topic later", ex: "Let's circle back on this next week." },
+      { w: "EOD", pos: "abbr", def: "end of day", ex: "I'll send the report by EOD." },
+      { w: "ASAP", pos: "abbr", def: "as soon as possible", ex: "I need this done ASAP." },
+      { w: "heads up", pos: "noun", def: "advance warning", ex: "Just a heads up — the client is coming Monday." },
+      { w: "ramp up", pos: "verb", def: "to increase activity or learning", ex: "It took me a month to ramp up." },
+      { w: "ping", pos: "verb", def: "to send a quick message", ex: "Ping me when you're free." },
+      { w: "rollout", pos: "noun", def: "official launch of something", ex: "The rollout is scheduled for next quarter." }
+    ],
+    phrases: [
+      { p: "Let me get back to you on that.", m: "I'll answer later when I know more." },
+      { p: "I'm slammed today.", m: "I'm extremely busy." },
+      { p: "Can we take this offline?", m: "Let's discuss this privately later." },
+      { p: "That's not in my wheelhouse.", m: "That's not my area of expertise." },
+      { p: "I'll keep you posted.", m: "I'll update you with news." },
+      { p: "Sorry, just catching up on emails.", m: "I'm reading messages I missed." },
+      { p: "Let's touch base tomorrow.", m: "Let's have a brief conversation tomorrow." },
+      { p: "I'm on it.", m: "I'm working on it right now." },
+      { p: "Bear with me a second.", m: "Please wait patiently." },
+      { p: "Where are we on this?", m: "What's the current status?" },
+      { p: "Can you walk me through it?", m: "Explain it step by step." },
+      { p: "I'll take a stab at it.", m: "I'll try to do it." },
+      { p: "That works for me.", m: "I agree / that's fine." },
+      { p: "Let's park that idea for now.", m: "Let's set it aside for later." },
+      { p: "I want to flag something.", m: "I want to point out a concern." },
+      { p: "Just a quick sanity check.", m: "Quick confirmation to be sure." },
+      { p: "Can you give me a quick summary?", m: "Briefly tell me the key points." },
+      { p: "I'm running behind.", m: "I'm late or delayed." },
+      { p: "Let me run this by you.", m: "Let me get your opinion on this." },
+      { p: "We're on the same page.", m: "We agree and understand each other." }
+    ]
+  },
+  emotions: {
+    words: [
+      { w: "exhausted", pos: "adj", def: "extremely tired", ex: "I'm exhausted after that long meeting." },
+      { w: "frustrated", pos: "adj", def: "annoyed because you can't do something", ex: "I'm frustrated with this slow internet." },
+      { w: "anxious", pos: "adj", def: "worried or nervous", ex: "I feel anxious about tomorrow's presentation." },
+      { w: "relieved", pos: "adj", def: "free from worry after stress ends", ex: "I'm so relieved the test is over." },
+      { w: "thrilled", pos: "adj", def: "extremely happy or excited", ex: "I'm thrilled you got the job!" },
+      { w: "disappointed", pos: "adj", def: "sad because something didn't meet expectations", ex: "I was disappointed by the movie." },
+      { w: "annoyed", pos: "adj", def: "slightly angry or irritated", ex: "I'm annoyed by my noisy neighbors." },
+      { w: "grateful", pos: "adj", def: "thankful", ex: "I'm grateful for your help." },
+      { w: "overwhelmed", pos: "adj", def: "having too much to handle emotionally", ex: "I feel overwhelmed by everything happening." },
+      { w: "homesick", pos: "adj", def: "missing your home", ex: "I get homesick on long trips." },
+      { w: "hesitant", pos: "adj", def: "unsure, holding back", ex: "I'm hesitant to make a decision yet." },
+      { w: "uneasy", pos: "adj", def: "slightly worried or uncomfortable", ex: "I feel uneasy about his plan." },
+      { w: "fed up", pos: "adj", def: "tired of putting up with something", ex: "I'm fed up with this traffic." },
+      { w: "drained", pos: "adj", def: "tired and out of energy", ex: "I'm completely drained after work." },
+      { w: "content", pos: "adj", def: "peacefully satisfied", ex: "I'm content with my simple life." },
+      { w: "uncertain", pos: "adj", def: "not sure", ex: "I'm uncertain about my future." },
+      { w: "irritated", pos: "adj", def: "mildly angry", ex: "Loud chewing irritates me." },
+      { w: "discouraged", pos: "adj", def: "losing confidence", ex: "Don't get discouraged by one failure." },
+      { w: "envious", pos: "adj", def: "wanting what someone else has", ex: "I'm envious of her travel photos." },
+      { w: "uplifted", pos: "adj", def: "feeling happier and more hopeful", ex: "Her message left me feeling uplifted." }
+    ],
+    phrases: [
+      { p: "I'm not feeling it today.", m: "I don't have motivation today." },
+      { p: "I needed that.", m: "That helped me feel better." },
+      { p: "I'm at my wit's end.", m: "I don't know what else to do." },
+      { p: "It's been a rough week.", m: "I've had a difficult week." },
+      { p: "I can't wrap my head around it.", m: "I can't understand it." },
+      { p: "I'm in a great mood.", m: "I feel very happy." },
+      { p: "That made my day.", m: "That made me very happy." },
+      { p: "I'm freaking out a bit.", m: "I'm panicking a little." },
+      { p: "I just need a moment.", m: "Give me a short break." },
+      { p: "I'm trying to stay positive.", m: "I'm working to keep a good attitude." },
+      { p: "I feel a lot better now.", m: "My mood improved." },
+      { p: "Honestly, I'm struggling.", m: "I'm having a hard time right now." },
+      { p: "I'm so over it.", m: "I'm tired of dealing with it." },
+      { p: "That hit me hard.", m: "That affected me deeply." },
+      { p: "I'm holding up okay.", m: "I'm managing despite difficulty." },
+      { p: "I could really use a break.", m: "I need to rest." },
+      { p: "It's getting to me.", m: "It's starting to bother me." },
+      { p: "I'm not myself today.", m: "I feel different/off today." },
+      { p: "That cheered me up.", m: "That made me happier." },
+      { p: "I'm trying not to take it personally.", m: "I'm trying not to feel hurt by it." }
+    ]
+  },
+  routines: {
+    words: [
+      { w: "snooze", pos: "verb", def: "to delay an alarm", ex: "I hit snooze three times this morning." },
+      { w: "commute", pos: "noun", def: "regular travel to work", ex: "My commute takes 45 minutes." },
+      { w: "errand", pos: "noun", def: "a short trip to do small tasks", ex: "I have a few errands to run today." },
+      { w: "skincare", pos: "noun", def: "products and habits for skin", ex: "My skincare routine is pretty simple." },
+      { w: "leftovers", pos: "noun", def: "food not eaten earlier", ex: "I'll have leftovers for lunch." },
+      { w: "groggy", pos: "adj", def: "drowsy, half-awake", ex: "I always feel groggy in the morning." },
+      { w: "unwind", pos: "verb", def: "to relax after stress", ex: "I unwind by watching shows at night." },
+      { w: "skip", pos: "verb", def: "to not do or eat something usual", ex: "I skipped breakfast today." },
+      { w: "tidy up", pos: "verb", def: "to clean and organize", ex: "I'll tidy up the kitchen before bed." },
+      { w: "stretch", pos: "verb", def: "to extend your body", ex: "I stretch every morning to wake up." },
+      { w: "scroll", pos: "verb", def: "to swipe through a feed", ex: "I scroll on my phone too much at night." },
+      { w: "doomscroll", pos: "verb", def: "to keep reading bad news", ex: "I tried to stop doomscrolling before bed." },
+      { w: "meal prep", pos: "noun", def: "preparing meals in advance", ex: "I do meal prep every Sunday." },
+      { w: "freshen up", pos: "verb", def: "to wash and look presentable", ex: "Let me freshen up before we leave." },
+      { w: "wind down", pos: "verb", def: "to slowly relax before sleep", ex: "I wind down with a book each night." },
+      { w: "go-to", pos: "adj", def: "favorite/reliable choice", ex: "Coffee is my go-to morning drink." },
+      { w: "nightcap", pos: "noun", def: "a drink before bed", ex: "I had a nightcap and went to sleep." },
+      { w: "out the door", pos: "phrase", def: "ready to leave", ex: "I'm out the door by 8 AM." },
+      { w: "knock out", pos: "verb", def: "to finish quickly / fall asleep fast", ex: "I knocked out the report in an hour." },
+      { w: "lounge", pos: "verb", def: "to relax lazily", ex: "I love to lounge on Sundays." }
+    ],
+    phrases: [
+      { p: "I'm not a morning person.", m: "I don't function well in the morning." },
+      { p: "I need my coffee first.", m: "I can't function without coffee." },
+      { p: "Same old, same old.", m: "Nothing new happening." },
+      { p: "I'm running late.", m: "I'm behind schedule." },
+      { p: "I'll grab something on the way.", m: "I'll get food while traveling." },
+      { p: "I had an early night.", m: "I went to bed early." },
+      { p: "I overslept.", m: "I slept longer than planned." },
+      { p: "It's been a long day.", m: "I'm tired from a busy day." },
+      { p: "I'm calling it a night.", m: "I'm going to sleep now." },
+      { p: "I have a lot on my plate.", m: "I have many tasks to do." },
+      { p: "I just woke up.", m: "I just got out of bed." },
+      { p: "I need to charge my phone.", m: "My phone battery is low." },
+      { p: "Let me grab a quick bite.", m: "I want a quick meal." },
+      { p: "I'm wiped out.", m: "I'm extremely tired." },
+      { p: "Time flies.", m: "Time passes quickly." },
+      { p: "I'm heading home.", m: "I'm going home now." },
+      { p: "I lost track of time.", m: "I didn't notice how much time passed." },
+      { p: "I'll do it first thing.", m: "I'll do it right when I start." },
+      { p: "Let's call it a day.", m: "Let's stop working for today." },
+      { p: "I just need five more minutes.", m: "Give me a little more time." }
+    ]
+  },
+  opinions: {
+    words: [
+      { w: "honestly", pos: "adv", def: "to be truthful", ex: "Honestly, I didn't like the movie." },
+      { w: "personally", pos: "adv", def: "from my view", ex: "Personally, I'd choose the blue one." },
+      { w: "overrated", pos: "adj", def: "praised more than it deserves", ex: "That restaurant is overrated." },
+      { w: "underrated", pos: "adj", def: "not given enough credit", ex: "This show is so underrated." },
+      { w: "decent", pos: "adj", def: "good but not great", ex: "The food was decent, not amazing." },
+      { w: "questionable", pos: "adj", def: "doubtful or strange", ex: "His decision was questionable." },
+      { w: "valid", pos: "adj", def: "reasonable, acceptable", ex: "That's a valid point." },
+      { w: "biased", pos: "adj", def: "unfairly favoring one side", ex: "That article is clearly biased." },
+      { w: "subjective", pos: "adj", def: "based on personal feelings", ex: "Taste is subjective." },
+      { w: "convincing", pos: "adj", def: "able to persuade", ex: "Her argument wasn't convincing." },
+      { w: "fair enough", pos: "phrase", def: "acceptable / I understand", ex: "Fair enough, I see your point." },
+      { w: "spot-on", pos: "adj", def: "exactly right", ex: "Your prediction was spot-on." },
+      { w: "off-putting", pos: "adj", def: "unpleasant or discouraging", ex: "His tone was off-putting." },
+      { w: "iffy", pos: "adj", def: "uncertain or doubtful", ex: "The plan sounds a bit iffy to me." },
+      { w: "solid", pos: "adj", def: "reliable, good", ex: "That's a solid recommendation." },
+      { w: "shaky", pos: "adj", def: "weak or unstable", ex: "His reasoning was a bit shaky." },
+      { w: "compelling", pos: "adj", def: "interesting and persuasive", ex: "She made a compelling argument." },
+      { w: "skeptical", pos: "adj", def: "doubtful", ex: "I'm skeptical about that claim." },
+      { w: "outdated", pos: "adj", def: "old, not modern", ex: "That idea feels outdated now." },
+      { w: "refreshing", pos: "adj", def: "pleasantly different", ex: "Her honesty was refreshing." }
+    ],
+    phrases: [
+      { p: "If you ask me…", m: "In my opinion…" },
+      { p: "I'd say it's worth it.", m: "I think it's a good choice." },
+      { p: "I'm on the fence about it.", m: "I haven't decided yet." },
+      { p: "I see your point, but…", m: "I understand, however…" },
+      { p: "It's not really my thing.", m: "I don't like it personally." },
+      { p: "I beg to differ.", m: "I disagree (politely)." },
+      { p: "That's a stretch.", m: "That's hard to believe." },
+      { p: "I'm all for it.", m: "I fully support it." },
+      { p: "I have mixed feelings about it.", m: "I'm partly positive, partly not." },
+      { p: "It depends.", m: "There's no simple answer." },
+      { p: "I couldn't agree more.", m: "I strongly agree." },
+      { p: "I wouldn't go that far.", m: "I don't fully agree." },
+      { p: "That's just my two cents.", m: "That's just my small opinion." },
+      { p: "Honestly, I don't get it.", m: "I don't understand the appeal." },
+      { p: "It is what it is.", m: "Accept it as is." },
+      { p: "I'm not so sure about that.", m: "I doubt it." },
+      { p: "To each their own.", m: "People have different tastes." },
+      { p: "I see where you're coming from.", m: "I understand your perspective." },
+      { p: "I have a soft spot for it.", m: "I like it for personal reasons." },
+      { p: "I'll have to think about it.", m: "I need more time to decide." }
+    ]
+  },
+  goals: {
+    words: [
+      { w: "milestone", pos: "noun", def: "important achievement point", ex: "Finishing this course was a milestone for me." },
+      { w: "consistent", pos: "adj", def: "always doing the same thing", ex: "I'm trying to be consistent with exercise." },
+      { w: "progress", pos: "noun", def: "forward movement", ex: "I'm making progress on my goals." },
+      { w: "habit", pos: "noun", def: "regular behavior", ex: "Reading daily is a good habit." },
+      { w: "achievable", pos: "adj", def: "possible to reach", ex: "Set achievable goals first." },
+      { w: "track", pos: "verb", def: "to monitor over time", ex: "I track my workouts in an app." },
+      { w: "commit", pos: "verb", def: "to dedicate yourself", ex: "I committed to running 3 times a week." },
+      { w: "long-term", pos: "adj", def: "over a long time", ex: "My long-term goal is to learn three languages." },
+      { w: "short-term", pos: "adj", def: "over a short time", ex: "My short-term goal is finishing this book." },
+      { w: "setback", pos: "noun", def: "a problem causing delay", ex: "I had a setback but I'm back on track." },
+      { w: "ambitious", pos: "adj", def: "wanting big achievements", ex: "She has ambitious career plans." },
+      { w: "motivation", pos: "noun", def: "drive to do something", ex: "I lose motivation halfway through." },
+      { w: "discipline", pos: "noun", def: "self-control to stick with things", ex: "Discipline matters more than motivation." },
+      { w: "stick to", pos: "verb", def: "to continue with a plan", ex: "I'm trying to stick to my budget." },
+      { w: "build up", pos: "verb", def: "to develop gradually", ex: "Build up your stamina slowly." },
+      { w: "aim", pos: "verb", def: "to target something", ex: "I aim to save 20% of my income." },
+      { w: "improve", pos: "verb", def: "to get better", ex: "I want to improve my English daily." },
+      { w: "accomplish", pos: "verb", def: "to successfully achieve", ex: "I accomplished a lot today." },
+      { w: "focus on", pos: "verb", def: "to concentrate on", ex: "I'm focusing on one goal at a time." },
+      { w: "doable", pos: "adj", def: "possible to do", ex: "That target is totally doable." }
+    ],
+    phrases: [
+      { p: "I'm working on myself.", m: "I'm trying to improve as a person." },
+      { p: "One step at a time.", m: "Go slowly and steadily." },
+      { p: "I'm in it for the long haul.", m: "I'm committed long-term." },
+      { p: "Baby steps.", m: "Small steps of progress." },
+      { p: "I've come a long way.", m: "I've made significant progress." },
+      { p: "I'm starting fresh.", m: "I'm beginning again." },
+      { p: "I gave it my best shot.", m: "I tried as hard as I could." },
+      { p: "Slow and steady wins.", m: "Consistency beats speed." },
+      { p: "I'm trying to stay on track.", m: "I'm working to keep my plan." },
+      { p: "It's a work in progress.", m: "I'm still improving it." },
+      { p: "I'm leveling up.", m: "I'm improving significantly." },
+      { p: "I bit off more than I could chew.", m: "I took on too much." },
+      { p: "I'm building good habits.", m: "I'm forming positive routines." },
+      { p: "I'm getting there.", m: "I'm making progress slowly." },
+      { p: "Practice makes perfect.", m: "Repetition leads to mastery." },
+      { p: "I have a lot to learn.", m: "I'm a beginner with much ahead." },
+      { p: "I'm pushing myself.", m: "I'm trying harder than usual." },
+      { p: "Better late than never.", m: "Starting late is better than not starting." },
+      { p: "I won't give up on it.", m: "I'll keep trying." },
+      { p: "Small wins add up.", m: "Little successes matter over time." }
+    ]
+  },
+  stress: {
+    words: [
+      { w: "burnout", pos: "noun", def: "exhaustion from overwork", ex: "I'm dealing with burnout lately." },
+      { w: "pressure", pos: "noun", def: "stressful demands", ex: "There's so much pressure at work right now." },
+      { w: "overworked", pos: "adj", def: "doing too much work", ex: "Half the team is overworked." },
+      { w: "cope", pos: "verb", def: "to deal with difficulty", ex: "I'm trying to cope with the workload." },
+      { w: "vent", pos: "verb", def: "to express frustration", ex: "I just need to vent for a minute." },
+      { w: "manage", pos: "verb", def: "to handle a situation", ex: "I'm managing, but barely." },
+      { w: "snap", pos: "verb", def: "to lose temper suddenly", ex: "I almost snapped at my coworker." },
+      { w: "tense", pos: "adj", def: "anxious, tight", ex: "I've been tense all week." },
+      { w: "panic", pos: "verb/noun", def: "sudden intense fear", ex: "Don't panic — we'll figure it out." },
+      { w: "trigger", pos: "noun", def: "something that causes a reaction", ex: "Loud noises are a trigger for me." },
+      { w: "soothing", pos: "adj", def: "calming", ex: "Her voice is so soothing." },
+      { w: "boundaries", pos: "noun", def: "personal limits", ex: "I need to set better boundaries at work." },
+      { w: "step back", pos: "verb", def: "to pause and gain perspective", ex: "Let me step back from this for a sec." },
+      { w: "breather", pos: "noun", def: "a short break", ex: "I need a breather." },
+      { w: "decompress", pos: "verb", def: "to release stress", ex: "I decompress with a long shower." },
+      { w: "vicious cycle", pos: "noun", def: "negative repeating pattern", ex: "Stress and bad sleep are a vicious cycle." },
+      { w: "spiral", pos: "verb", def: "to get worse rapidly", ex: "My thoughts started to spiral last night." },
+      { w: "let off steam", pos: "verb", def: "to release frustration", ex: "I went for a run to let off steam." },
+      { w: "loaded", pos: "adj", def: "having lots to do", ex: "My schedule is loaded this week." },
+      { w: "frazzled", pos: "adj", def: "stressed and exhausted", ex: "I feel frazzled after that call." }
+    ],
+    phrases: [
+      { p: "I need a break.", m: "I need to stop and rest." },
+      { p: "I'm stretched thin.", m: "I have too much to handle." },
+      { p: "Take a deep breath.", m: "Calm yourself down." },
+      { p: "Don't sweat it.", m: "Don't worry about it." },
+      { p: "Easier said than done.", m: "Simple to say, hard to do." },
+      { p: "It'll blow over.", m: "It will pass eventually." },
+      { p: "I just need to clear my head.", m: "I need to think clearly again." },
+      { p: "Let's take it one step at a time.", m: "Don't rush, go slowly." },
+      { p: "I'm running on empty.", m: "I have no energy left." },
+      { p: "I'm hanging in there.", m: "I'm coping, just barely." },
+      { p: "Things will calm down soon.", m: "It will be less hectic." },
+      { p: "I'm losing my mind.", m: "I'm extremely stressed." },
+      { p: "I just need to vent.", m: "I want to express my feelings." },
+      { p: "It's not the end of the world.", m: "It's not as bad as it feels." },
+      { p: "I'll get through this.", m: "I'll survive this challenge." },
+      { p: "I just need some air.", m: "I want to step outside briefly." },
+      { p: "I can't even think straight.", m: "I'm too stressed to think clearly." },
+      { p: "Just breathe.", m: "Slow down and stay calm." },
+      { p: "I'm putting out fires all day.", m: "I'm handling crises constantly." },
+      { p: "I just need to disconnect.", m: "I need to be offline for a while." }
+    ]
+  },
+  hobbies: {
+    words: [
+      { w: "hooked", pos: "adj", def: "addicted, very interested", ex: "I'm hooked on this new show." },
+      { w: "binge", pos: "verb", def: "to consume a lot at once", ex: "I binge-watched the whole season." },
+      { w: "pick up", pos: "verb", def: "to start a new hobby", ex: "I picked up painting last month." },
+      { w: "casual", pos: "adj", def: "not serious, relaxed", ex: "I'm just a casual player." },
+      { w: "obsessed", pos: "adj", def: "very strongly interested", ex: "I'm obsessed with that podcast." },
+      { w: "amateur", pos: "noun", def: "non-professional hobbyist", ex: "I'm an amateur photographer." },
+      { w: "into", pos: "prep", def: "interested in", ex: "I'm really into cooking these days." },
+      { w: "tinker", pos: "verb", def: "to play around making small changes", ex: "I love tinkering with old electronics." },
+      { w: "geek out", pos: "verb", def: "to enthusiastically discuss a topic", ex: "We geeked out about coffee for an hour." },
+      { w: "vibe", pos: "noun", def: "feeling or mood", ex: "I love the vibe of this café." },
+      { w: "unwind", pos: "verb", def: "to relax", ex: "I unwind by playing guitar." },
+      { w: "kill time", pos: "verb", def: "to pass time without purpose", ex: "I play games to kill time." },
+      { w: "side project", pos: "noun", def: "a hobby project beyond work", ex: "I've been coding a side project at night." },
+      { w: "DIY", pos: "abbr", def: "do-it-yourself", ex: "I love DIY home projects." },
+      { w: "playlist", pos: "noun", def: "list of selected songs", ex: "Send me your workout playlist." },
+      { w: "lowkey", pos: "adv", def: "kind of, secretly", ex: "I'm lowkey obsessed with that game." },
+      { w: "rabbit hole", pos: "noun", def: "deep dive into a topic", ex: "I went down a YouTube rabbit hole last night." },
+      { w: "stumble upon", pos: "verb", def: "to find by accident", ex: "I stumbled upon this great podcast." },
+      { w: "dabble", pos: "verb", def: "to try casually", ex: "I dabble in photography." },
+      { w: "get into", pos: "verb", def: "to develop interest in", ex: "I'm getting into chess lately." }
+    ],
+    phrases: [
+      { p: "I've been really into…", m: "I've enjoyed doing… recently." },
+      { p: "It's my way of relaxing.", m: "It helps me unwind." },
+      { p: "I do it for fun.", m: "I do it as a hobby." },
+      { p: "I can't put it down.", m: "I'm very engaged (book/game)." },
+      { p: "I lost myself in it.", m: "I was deeply absorbed." },
+      { p: "It's surprisingly fun.", m: "More enjoyable than expected." },
+      { p: "I'm not great at it, but…", m: "I'm a beginner, but I enjoy it." },
+      { p: "Give it a shot.", m: "Try it out." },
+      { p: "It really clicks with me.", m: "It suits me well." },
+      { p: "I lost track of time.", m: "Time passed without me noticing." },
+      { p: "It's a great way to unwind.", m: "It helps me relax effectively." },
+      { p: "I'm trying to get better at it.", m: "I'm practicing to improve." },
+      { p: "What do you do for fun?", m: "What are your hobbies?" },
+      { p: "I'm just messing around.", m: "I'm doing it casually." },
+      { p: "It scratches a creative itch.", m: "It satisfies my creative urge." },
+      { p: "I picked it up recently.", m: "I started it not long ago." },
+      { p: "It's not for everyone.", m: "Some people might not enjoy it." },
+      { p: "I do it whenever I can.", m: "I do it any time I have time." },
+      { p: "It's my guilty pleasure.", m: "I secretly love it." },
+      { p: "I'm getting the hang of it.", m: "I'm starting to learn how." }
+    ]
+  }
+};
+
+const TOPICS = Object.keys(LIBRARY);
+const TOPIC_EMOJI = { work: "💼", emotions: "💭", routines: "☕", opinions: "💬", goals: "🎯", stress: "😮‍💨", hobbies: "🎨" };
+
+// =============== STATE ===============
+const STORAGE_KEY = 'dailyEnglish_v1';
+let state = loadState();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return {
+    seenWords: {}, // { topic: [list of seen word strings] }
+    seenPhrases: {}, // { topic: [list of seen phrase strings] }
+    learnedWords: [], // array of {topic, w}
+    learnedPhrases: [], // array of {topic, p}
+    todaySet: null, // { date, topic, words, phrases, learnedIds }
+    selectedTopic: null, // user override
+    daysActive: [],
+    streak: 0,
+    lastDate: null
+  };
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+// =============== DATE HELPERS ===============
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function formatDate() {
+  return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+}
+
+// =============== SET GENERATION ===============
+function pickTopicForToday() {
+  if (state.selectedTopic) return state.selectedTopic;
+  // Rotate through topics by day-of-year
+  const start = new Date(new Date().getFullYear(), 0, 0);
+  const diff = (new Date() - start) + ((start.getTimezoneOffset() - new Date().getTimezoneOffset()) * 60 * 1000);
+  const dayOfYear = Math.floor(diff / (1000 * 60 * 60 * 24));
+  return TOPICS[dayOfYear % TOPICS.length];
+}
+
+function pickFresh(pool, seen, count) {
+  // Filter out already-seen items
+  const available = pool.filter(item => {
+    const key = item.w || item.p;
+    return !seen.includes(key);
+  });
+
+  if (available.length >= count) {
+    // Shuffle and take count
+    const shuffled = [...available].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, count);
+  }
+
+  // Pool exhausted — reset seen for this topic and start over
+  return [...pool].sort(() => Math.random() - 0.5).slice(0, count);
+}
+
+function generateNewSet(forceNewTopic) {
+  const topic = forceNewTopic || pickTopicForToday();
+
+  if (!state.seenWords[topic]) state.seenWords[topic] = [];
+  if (!state.seenPhrases[topic]) state.seenPhrases[topic] = [];
+
+  const pickedWords = pickFresh(LIBRARY[topic].words, state.seenWords[topic], 5);
+  const pickedPhrases = pickFresh(LIBRARY[topic].phrases, state.seenPhrases[topic], 5);
+
+  // Check if pool exhausted (reset case)
+  const wordsAvailable = LIBRARY[topic].words.filter(item => !state.seenWords[topic].includes(item.w)).length;
+  const phrasesAvailable = LIBRARY[topic].phrases.filter(item => !state.seenPhrases[topic].includes(item.p)).length;
+
+  if (wordsAvailable < 5) state.seenWords[topic] = [];
+  if (phrasesAvailable < 5) state.seenPhrases[topic] = [];
+
+  // Mark as seen
+  pickedWords.forEach(item => {
+    if (!state.seenWords[topic].includes(item.w)) state.seenWords[topic].push(item.w);
+  });
+  pickedPhrases.forEach(item => {
+    if (!state.seenPhrases[topic].includes(item.p)) state.seenPhrases[topic].push(item.p);
+  });
+
+  state.todaySet = {
+    date: todayStr(),
+    topic: topic,
+    words: pickedWords,
+    phrases: pickedPhrases,
+    learnedIds: []
+  };
+
+  saveState();
+  render();
+  showToast('New set ready! 🎉');
+}
+
+function ensureTodaySet() {
+  const today = todayStr();
+  if (!state.todaySet || state.todaySet.date !== today) {
+    generateNewSet();
+    updateStreak();
+  }
+}
+
+function updateStreak() {
+  const today = todayStr();
+  if (state.daysActive.includes(today)) return;
+
+  state.daysActive.push(today);
+
+  if (state.lastDate) {
+    const last = new Date(state.lastDate);
+    const now = new Date(today);
+    const diff = Math.round((now - last) / (1000 * 60 * 60 * 24));
+    if (diff === 1) state.streak += 1;
+    else if (diff > 1) state.streak = 1;
+    else state.streak = state.streak || 1;
+  } else {
+    state.streak = 1;
+  }
+  state.lastDate = today;
+  saveState();
+}
+
+// =============== UI ===============
+let currentTab = 'words';
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === tab);
+  });
+  renderContent();
+}
+
+function toggleLearned(type, idx) {
+  const id = type + '_' + idx;
+  const learned = state.todaySet.learnedIds;
+  const item = type === 'words' ? state.todaySet.words[idx] : state.todaySet.phrases[idx];
+
+  if (learned.includes(id)) {
+    state.todaySet.learnedIds = learned.filter(x => x !== id);
+  } else {
+    state.todaySet.learnedIds.push(id);
+    // Add to overall learned list
+    if (type === 'words') {
+      const exists = state.learnedWords.find(x => x.w === item.w && x.topic === state.todaySet.topic);
+      if (!exists) state.learnedWords.push({ topic: state.todaySet.topic, w: item.w });
+    } else {
+      const exists = state.learnedPhrases.find(x => x.p === item.p && x.topic === state.todaySet.topic);
+      if (!exists) state.learnedPhrases.push({ topic: state.todaySet.topic, p: item.p });
+    }
+    showToast('Nice! 👍');
+  }
+  saveState();
+  render();
+}
+
+function speak(text) {
+  if (!('speechSynthesis' in window)) {
+    showToast('Speech not supported');
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'en-US';
+  utter.rate = 0.9;
+  window.speechSynthesis.speak(utter);
+}
+
+function toggleTopicSelector() {
+  document.getElementById('topicSelector').classList.toggle('open');
+}
+
+function selectTopic(topic) {
+  state.selectedTopic = topic;
+  saveState();
+  generateNewSet(topic);
+  document.getElementById('topicSelector').classList.remove('open');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function renderContent() {
+  const container = document.getElementById('content');
+  if (!state.todaySet) {
+    container.innerHTML = '<div class="empty"><div class="spinner"></div>Loading…</div>';
+    return;
+  }
+
+  if (currentTab === 'words') {
+    container.innerHTML = state.todaySet.words.map((item, idx) => {
+      const id = 'words_' + idx;
+      const isLearned = state.todaySet.learnedIds.includes(id);
+      return `
+        <div class="card ${isLearned ? 'learned' : ''}">
+          <div class="card-header">
+            <div><span class="word">${escapeHtml(item.w)}</span><span class="pos">${escapeHtml(item.pos)}</span></div>
+          </div>
+          <div class="definition">${escapeHtml(item.def)}</div>
+          <div class="example">"${escapeHtml(item.ex)}"</div>
+          <div class="actions">
+            <button class="btn" onclick="speak('${escapeHtml(item.w).replace(/'/g, "\\'")}')">🔊 Word</button>
+            <button class="btn" onclick="speak('${escapeHtml(item.ex).replace(/'/g, "\\'")}')">🔊 Example</button>
+            <button class="btn learned-btn ${isLearned ? 'done' : ''}" onclick="toggleLearned('words', ${idx})">${isLearned ? '✓ Got it' : 'Got it'}</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } else {
+    container.innerHTML = state.todaySet.phrases.map((item, idx) => {
+      const id = 'phrases_' + idx;
+      const isLearned = state.todaySet.learnedIds.includes(id);
+      return `
+        <div class="card ${isLearned ? 'learned' : ''}">
+          <div class="phrase">${escapeHtml(item.p)}</div>
+          <div class="meaning">↳ ${escapeHtml(item.m)}</div>
+          <div class="actions">
+            <button class="btn" onclick="speak('${escapeHtml(item.p).replace(/'/g, "\\'")}')">🔊 Listen</button>
+            <button class="btn learned-btn ${isLearned ? 'done' : ''}" onclick="toggleLearned('phrases', ${idx})">${isLearned ? '✓ Got it' : 'Got it'}</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+function renderTopicSelector() {
+  const sel = document.getElementById('topicSelector');
+  sel.innerHTML = TOPICS.map(t => `
+    <button class="topic-btn ${state.todaySet && state.todaySet.topic === t ? 'selected' : ''}" onclick="selectTopic('${t}')">
+      ${TOPIC_EMOJI[t]} ${t}
+    </button>
+  `).join('');
+}
+
+function render() {
+  document.getElementById('dateText').textContent = formatDate();
+  document.getElementById('streakText').textContent = `🔥 ${state.streak} day streak`;
+
+  if (state.todaySet) {
+    const topic = state.todaySet.topic;
+    document.getElementById('topicPill').innerHTML = `${TOPIC_EMOJI[topic]} ${topic} <span style="opacity:0.6">▾</span>`;
+
+    const total = 10;
+    const learned = state.todaySet.learnedIds.length;
+    document.getElementById('progressFill').style.width = (learned / total * 100) + '%';
+    document.getElementById('todayLearned').textContent = learned + '/10';
+  }
+
+  document.getElementById('totalLearned').textContent = state.learnedWords.length + state.learnedPhrases.length;
+  document.getElementById('daysActive').textContent = state.daysActive.length;
+
+  renderTopicSelector();
+  renderContent();
+}
+
+// =============== INSTALL PROMPT ===============
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
+// Show iOS install banner if applicable
+function checkInstallPrompt() {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if (isIOS && !isStandalone && !localStorage.getItem('installBannerDismissed')) {
+    document.getElementById('installBanner').classList.add('show');
+  }
+}
+
+// =============== INIT ===============
+ensureTodaySet();
+render();
+checkInstallPrompt();
+
+// Service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.log('SW failed', err));
+  });
+}
+
+// Refresh state on visibility change (check if day changed)
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    ensureTodaySet();
+    render();
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "Daily English — 5+5",
+  "short_name": "Daily English",
+  "description": "Learn 5 useful words and 5 useful phrases every day",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f0f1a",
+  "theme_color": "#1a1a2e",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
