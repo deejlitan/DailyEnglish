@@ -1,4 +1,4 @@
-const CACHE = 'daily-english-v1';
+const CACHE = 'daily-english-v2';
 const ASSETS = [
   './',
   './index.html',

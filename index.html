@@ -245,6 +245,85 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* Filler cards */
+  .filler-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .filler-card:active { transform: scale(0.98); background: var(--surface-2); }
+  .filler-card.done { border-color: var(--success); background: rgba(74, 222, 128, 0.08); }
+  .filler-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .filler-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  .filler-count {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 4px 10px;
+    border-radius: 20px;
+    min-width: 50px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .filler-count.done { background: var(--success); color: #0a3d1c; }
+  .filler-use {
+    font-size: 12px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .filler-ex {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-bottom: 12px;
+    padding-left: 10px;
+    border-left: 2px solid var(--border);
+  }
+  .filler-progress {
+    height: 6px;
+    background: var(--surface-2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .filler-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.25s ease;
+  }
+  .filler-card.done .filler-progress-fill { background: var(--success); }
+  .filler-tap-hint {
+    font-size: 12px;
+    color: var(--text-faint);
+    text-align: center;
+  }
+  .filler-done-badge {
+    font-size: 12px;
+    color: var(--success);
+    font-weight: 600;
+    text-align: center;
+  }
+
   /* Stats footer */
   .stats {
     display: grid;
@@ -300,7 +379,7 @@
       <span class="streak" id="streakText">🔥 0 day streak</span>
     </div>
     <h1 class="title">Daily English</h1>
-    <p class="subtitle">5 words + 5 phrases you'll actually use</p>
+    <p class="subtitle">5 words + 5 phrases + 5 fillers daily</p>
     <div class="topic-pill" id="topicPill" onclick="toggleTopicSelector()">📚 loading…</div>
   </div>
 
@@ -321,6 +400,7 @@
   <div class="tabs">
     <button class="tab active" data-tab="words" onclick="switchTab('words')">Words</button>
     <button class="tab" data-tab="phrases" onclick="switchTab('phrases')">Phrases</button>
+    <button class="tab" data-tab="fillers" onclick="switchTab('fillers')">Fillers</button>
   </div>
 
   <div id="content"></div>
@@ -674,6 +754,61 @@ const LIBRARY = {
 const TOPICS = Object.keys(LIBRARY);
 const TOPIC_EMOJI = { work: "💼", emotions: "💭", routines: "☕", opinions: "💬", goals: "🎯", stress: "😮‍💨", hobbies: "🎨" };
 
+// Speaking fillers — practice 10x each to sound smoother
+const FILLERS = [
+  // Opinion fillers
+  { f: "In my opinion…", use: "Before sharing what you think", ex: "In my opinion, remote work is more productive." },
+  { f: "I think…", use: "Soft, everyday opinion", ex: "I think we should leave earlier." },
+  { f: "I believe…", use: "Slightly stronger than 'I think'", ex: "I believe honesty matters most." },
+  { f: "If you ask me…", use: "Casual personal opinion", ex: "If you ask me, that's a bad deal." },
+  { f: "Personally,…", use: "Emphasizes it's your view", ex: "Personally, I'd go with the cheaper option." },
+  { f: "From my point of view,…", use: "Formal opinion intro", ex: "From my point of view, the plan needs work." },
+
+  // Explaining fillers
+  { f: "What I mean is…", use: "Clarifying what you just said", ex: "It was fine. What I mean is, not great, just okay." },
+  { f: "Let me explain.", use: "Buy time before explaining", ex: "It's complicated. Let me explain." },
+  { f: "In other words,…", use: "Rephrasing your point", ex: "He's busy. In other words, don't call him." },
+  { f: "The thing is,…", use: "Introducing the main issue", ex: "The thing is, I don't have time today." },
+  { f: "Let me put it this way…", use: "Restating in a clearer way", ex: "Let me put it this way — it's not worth the risk." },
+  { f: "What I'm trying to say is…", use: "When struggling to be clear", ex: "What I'm trying to say is, I need help." },
+
+  // Example fillers
+  { f: "For example,…", use: "Introducing an example", ex: "I love fruit — for example, mangoes and apples." },
+  { f: "For instance,…", use: "Same as 'for example'", ex: "Some habits help — for instance, drinking water." },
+  { f: "Like…", use: "Casual example intro", ex: "I'm into sports, like basketball and tennis." },
+  { f: "Such as…", use: "Listing examples formally", ex: "I enjoy outdoor activities such as hiking." },
+  { f: "Take… for example.", use: "Pointing to a specific case", ex: "Take Monday, for example. I was swamped." },
+
+  // Thinking / softening fillers
+  { f: "Actually,…", use: "Correcting or surprising info", ex: "Actually, that's not quite right." },
+  { f: "To be honest,…", use: "Before something direct", ex: "To be honest, I didn't enjoy it." },
+  { f: "Honestly,…", use: "Casual version of above", ex: "Honestly, I forgot all about it." },
+  { f: "You know,…", use: "Casual filler / softener", ex: "You know, it might rain later." },
+  { f: "I mean,…", use: "Pausing to rephrase", ex: "I mean, it could work, but it's risky." },
+  { f: "Well,…", use: "Buys thinking time", ex: "Well, that depends on the budget." },
+  { f: "Let me think…", use: "Open pause for thinking", ex: "Let me think… maybe Friday works." },
+  { f: "Hmm, that's a good question.", use: "Buys time for hard questions", ex: "Hmm, that's a good question. Give me a sec." },
+
+  // Agreement / acknowledgment
+  { f: "That makes sense.", use: "Showing you understand", ex: "Oh, that makes sense now." },
+  { f: "I see what you mean.", use: "Acknowledging their point", ex: "I see what you mean — it's tricky." },
+  { f: "Fair point.", use: "Quickly conceding", ex: "Fair point. I hadn't thought of that." },
+  { f: "That's a good point.", use: "Acknowledging their input", ex: "That's a good point, actually." },
+  { f: "Right, right.", use: "Quick agreement", ex: "Right, right — totally agree." },
+
+  // Disagreement / soft pushback
+  { f: "I see your point, but…", use: "Polite disagreement", ex: "I see your point, but I'd do it differently." },
+  { f: "I'm not sure about that.", use: "Soft doubt", ex: "I'm not sure about that — let me check." },
+  { f: "Having said that,…", use: "Adding a counterpoint", ex: "It's expensive. Having said that, it's high quality." },
+  { f: "On the other hand,…", use: "Showing the opposite side", ex: "It's risky. On the other hand, the reward is huge." },
+
+  // Transition / topic
+  { f: "By the way,…", use: "Adding a side note", ex: "By the way, I called your mom." },
+  { f: "Speaking of which,…", use: "Smooth topic connection", ex: "Speaking of which, did you finish the book?" },
+  { f: "That reminds me,…", use: "Triggered memory", ex: "That reminds me, I owe you money." },
+  { f: "Anyway,…", use: "Returning to the main topic", ex: "Anyway, where were we?" }
+];
+
 // =============== STATE ===============
 const STORAGE_KEY = 'dailyEnglish_v1';
 let state = loadState();
@@ -688,11 +823,13 @@ function loadState() {
     seenPhrases: {}, // { topic: [list of seen phrase strings] }
     learnedWords: [], // array of {topic, w}
     learnedPhrases: [], // array of {topic, p}
-    todaySet: null, // { date, topic, words, phrases, learnedIds }
+    todaySet: null, // { date, topic, words, phrases, fillers, learnedIds, fillerCounts }
     selectedTopic: null, // user override
     daysActive: [],
     streak: 0,
-    lastDate: null
+    lastDate: null,
+    seenFillers: [], // list of seen filler strings
+    masteredFillers: [] // fillers practiced 10x at least once
   };
 }
 
@@ -741,16 +878,20 @@ function generateNewSet(forceNewTopic) {
 
   if (!state.seenWords[topic]) state.seenWords[topic] = [];
   if (!state.seenPhrases[topic]) state.seenPhrases[topic] = [];
+  if (!state.seenFillers) state.seenFillers = [];
 
   const pickedWords = pickFresh(LIBRARY[topic].words, state.seenWords[topic], 5);
   const pickedPhrases = pickFresh(LIBRARY[topic].phrases, state.seenPhrases[topic], 5);
+  const pickedFillers = pickFresh(FILLERS, state.seenFillers, 5);
 
   // Check if pool exhausted (reset case)
   const wordsAvailable = LIBRARY[topic].words.filter(item => !state.seenWords[topic].includes(item.w)).length;
   const phrasesAvailable = LIBRARY[topic].phrases.filter(item => !state.seenPhrases[topic].includes(item.p)).length;
+  const fillersAvailable = FILLERS.filter(item => !state.seenFillers.includes(item.f)).length;
 
   if (wordsAvailable < 5) state.seenWords[topic] = [];
   if (phrasesAvailable < 5) state.seenPhrases[topic] = [];
+  if (fillersAvailable < 5) state.seenFillers = [];
 
   // Mark as seen
   pickedWords.forEach(item => {
@@ -759,13 +900,22 @@ function generateNewSet(forceNewTopic) {
   pickedPhrases.forEach(item => {
     if (!state.seenPhrases[topic].includes(item.p)) state.seenPhrases[topic].push(item.p);
   });
+  pickedFillers.forEach(item => {
+    if (!state.seenFillers.includes(item.f)) state.seenFillers.push(item.f);
+  });
+
+  // Initialize filler practice counts (reset each new set)
+  const fillerCounts = {};
+  pickedFillers.forEach((_, i) => { fillerCounts[i] = 0; });
 
   state.todaySet = {
     date: todayStr(),
     topic: topic,
     words: pickedWords,
     phrases: pickedPhrases,
-    learnedIds: []
+    fillers: pickedFillers,
+    learnedIds: [],
+    fillerCounts: fillerCounts
   };
 
   saveState();
@@ -870,6 +1020,32 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+function tapFiller(idx) {
+  if (!state.todaySet.fillerCounts) state.todaySet.fillerCounts = {};
+  const current = state.todaySet.fillerCounts[idx] || 0;
+  if (current >= 10) {
+    // Reset on tap after complete
+    state.todaySet.fillerCounts[idx] = 0;
+    saveState();
+    render();
+    return;
+  }
+  state.todaySet.fillerCounts[idx] = current + 1;
+
+  // Auto-speak so user hears and repeats
+  speak(state.todaySet.fillers[idx].f);
+
+  if (state.todaySet.fillerCounts[idx] === 10) {
+    // Mark as mastered
+    const f = state.todaySet.fillers[idx].f;
+    if (!state.masteredFillers) state.masteredFillers = [];
+    if (!state.masteredFillers.includes(f)) state.masteredFillers.push(f);
+    showToast('Mastered! 🔥');
+  }
+  saveState();
+  render();
+}
+
 function renderContent() {
   const container = document.getElementById('content');
   if (!state.todaySet) {
@@ -896,7 +1072,7 @@ function renderContent() {
         </div>
       `;
     }).join('');
-  } else {
+  } else if (currentTab === 'phrases') {
     container.innerHTML = state.todaySet.phrases.map((item, idx) => {
       const id = 'phrases_' + idx;
       const isLearned = state.todaySet.learnedIds.includes(id);
@@ -911,6 +1087,34 @@ function renderContent() {
         </div>
       `;
     }).join('');
+  } else if (currentTab === 'fillers') {
+    if (!state.todaySet.fillers || state.todaySet.fillers.length === 0) {
+      container.innerHTML = '<div class="empty">No fillers in this set. Tap "New set" to refresh.</div>';
+      return;
+    }
+    const counts = state.todaySet.fillerCounts || {};
+    container.innerHTML = `
+      <div style="background:var(--accent-soft); border:1px solid var(--accent); border-radius:12px; padding:12px 14px; margin-bottom:14px; font-size:13px; color:var(--text);">
+        💪 <b style="color:var(--accent);">Tap each filler 10 times</b> while saying it aloud. Audio plays each tap so you can hear and match the rhythm.
+      </div>
+      ${state.todaySet.fillers.map((item, idx) => {
+        const count = counts[idx] || 0;
+        const isDone = count >= 10;
+        const percent = Math.min(count / 10 * 100, 100);
+        return `
+          <div class="filler-card ${isDone ? 'done' : ''}" onclick="tapFiller(${idx})">
+            <div class="filler-top">
+              <div class="filler-text">${escapeHtml(item.f)}</div>
+              <div class="filler-count ${isDone ? 'done' : ''}">${count}/10</div>
+            </div>
+            <div class="filler-use">${escapeHtml(item.use)}</div>
+            <div class="filler-ex">"${escapeHtml(item.ex)}"</div>
+            <div class="filler-progress"><div class="filler-progress-fill" style="width:${percent}%"></div></div>
+            ${isDone ? '<div class="filler-done-badge">✓ Mastered — tap to reset</div>' : '<div class="filler-tap-hint">👆 Tap to practice + hear it</div>'}
+          </div>
+        `;
+      }).join('')}
+    `;
   }
 }
 
@@ -931,13 +1135,17 @@ function render() {
     const topic = state.todaySet.topic;
     document.getElementById('topicPill').innerHTML = `${TOPIC_EMOJI[topic]} ${topic} <span style="opacity:0.6">▾</span>`;
 
-    const total = 10;
-    const learned = state.todaySet.learnedIds.length;
-    document.getElementById('progressFill').style.width = (learned / total * 100) + '%';
-    document.getElementById('todayLearned').textContent = learned + '/10';
+    // Total items: 5 words + 5 phrases + 5 fillers (each filler needs 10 taps to count as done)
+    const total = 15;
+    const learnedItems = state.todaySet.learnedIds.length;
+    const fillerDone = state.todaySet.fillers ? state.todaySet.fillers.filter((_, i) => (state.todaySet.fillerCounts && state.todaySet.fillerCounts[i] >= 10)).length : 0;
+    const done = learnedItems + fillerDone;
+    document.getElementById('progressFill').style.width = (done / total * 100) + '%';
+    document.getElementById('todayLearned').textContent = done + '/' + total;
   }
 
-  document.getElementById('totalLearned').textContent = state.learnedWords.length + state.learnedPhrases.length;
+  const masteredCount = (state.masteredFillers || []).length;
+  document.getElementById('totalLearned').textContent = state.learnedWords.length + state.learnedPhrases.length + masteredCount;
   document.getElementById('daysActive').textContent = state.daysActive.length;
 
   renderTopicSelector();
